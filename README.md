@@ -1,8 +1,9 @@
 # 📌 Nginx Log Monitoring Project
 
 ## 📖 프로젝트 소개
-Nginx 웹 서버의 **접속 로그와 에러 로그를 모니터링**하여 서비스 가용성 및 보안 이벤트를 빠르게 파악하기 위한 프로젝트입니다.  
-특히 **SSH 로그인 실패 탐지, 접속 현황 분석, 리소스 사용량 확인** 등을 자동화 스크립트로 구현하였습니다.  
+Nginx 웹 서버의 **접속 로그와 에러 로그를 모니터링**하여 서비스 가용성 및 보안 이벤트를 빠르게 파악하기 위한 프로젝트 
+
+특히 **SSH 로그인 실패 탐지, 접속 현황 분석, 리소스 사용량 확인** 등을 자동화 스크립트로 구현함
 
 ---
 
@@ -18,10 +19,10 @@ Nginx 웹 서버의 **접속 로그와 에러 로그를 모니터링**하여 서
 
 ## 📅 진행 순서
 
-### 1️⃣ 1 - Nginx 설치 및 기본 로그 확인  
-### 2️⃣ 2 - SSH 로그인 실패 탐지  
-### 3️⃣ 3 - 로그 분석 자동화 스크립트  
-### 4️⃣ 4 - 실시간 모니터링  
+### 1️⃣  - Nginx 설치 및 기본 로그 확인  
+### 2️⃣  - SSH 로그인 실패 탐지  
+### 3️⃣  - 로그 분석 자동화 스크립트  
+### 4️⃣  - 실시간 모니터링  
 
  
 ## ⚙️ 1. Nginx 설치 및 기본 로그 확인
@@ -45,7 +46,7 @@ Nginx 웹 서버의 **접속 로그와 에러 로그를 모니터링**하여 서
 
 ```bash
 sudo nano /usr/local/bin/nginx_log_analysis.sh   # 스크립트 파일 생성
-sudo chmod +x /usr/local/bin/nginx_log_analysis.sh  # 실행 권한 부여
+sudo chmod +x /usr/local/bin/nginx_log_analysis.sh  # 실행 권한 부여 (실행 권한이 없을시)
 ```
 
 ### 📄 `nginx_log_analysis.sh`
@@ -53,8 +54,8 @@ sudo chmod +x /usr/local/bin/nginx_log_analysis.sh  # 실행 권한 부여
 ```bash
 #!/bin/bash
 
-LOGFILE="/var/log/nginx/access.log"           # nginx access log 경로
-OUTPUT="/var/log/nginx/analysis_append.log"   # 분석 결과 기록 파일
+LOGFILE="/var/log/nginx/access.log"           # nginx access log 파일 가져오기
+OUTPUT="/var/log/nginx/analysis_append.log"   # /var/log/nginx 경로의 analysis_append.log에 기록
 
 # 분석 시작
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') 분석 시작 =====" >> $OUTPUT
@@ -85,17 +86,12 @@ sudo crontab -e    # 2번(vim) 편집기 선택
 ```
 
 ## 설정 예시
-
-- 매일 자정에 실행
-
 ```bash
-0 0 * * * /usr/local/bin/nginx_log_analysis.sh
+0 0 * * * /usr/local/bin/nginx_log_analysis.sh # 매일 자정마다 스크립트 실행
 ```
 
-- 1분마다 실행 (테스트용)
-
 ```bash
-* * * * * /usr/local/bin/nginx_log_analysis.sh
+* * * * * /usr/local/bin/nginx_log_analysis.sh # 1분마다 실행 (테스트용)
 ```
 
 ---
@@ -113,7 +109,7 @@ sudo /usr/local/bin/nginx_log_analysis.sh
 ```bash
 tail -F /var/log/nginx/analysis_append.log
 ```
-
+<img width="520" height="600" alt="image" src="https://github.com/user-attachments/assets/9a04a1b1-d25a-451e-b557-33771df8aef8" />
 
 ## 🌐 5. VirtualBox 네트워크 설정 (참고)
 
@@ -121,17 +117,12 @@ tail -F /var/log/nginx/analysis_append.log
 <img width="520" height="520" alt="image" src="https://github.com/user-attachments/assets/24a9097f-2756-4d39-b31d-9da728dbb2a5" />
 
 - 실제 pc와 연결 된 LAN에 직접 연결되어 dhcp로 IP 자동 할당
-- 같은 네트워크의 다른 PC(예: 노트북)에서 접속 가능:
-    
-    ```
-    http://192.168.0.2
-    ```
-    
+- 같은 네트워크의 다른 PC(예: 노트북)에서 접속 가능
 
 ---
 
 ## 📷 결과 화면
-<img width="520" height="540" alt="image" src="https://github.com/user-attachments/assets/9a04a1b1-d25a-451e-b557-33771df8aef8" />
+
 
 
 ---
@@ -147,10 +138,10 @@ tail -F /var/log/nginx/analysis_append.log
 ---
 
 ### 👤 신기범
-문제   : 스크립트 실행 시 출력이 이어져 가독성이 떨어짐  
-원인   : 줄바꿈 처리 미흡  
-해결   : echo -e "\n"을 추가하여 출력 가독성 개선  
-회고   : SSH 로그인 실패 감지를 구현하며 보안 모니터링의 중요성을 체감했습니다. 단순 로그 확인이 아니라 의미 있는 데이터로 가공하는 경험이 유익했습니다.  
+문제   : 스크립트 실행 시 출력이 끊여 가독성이 떨어짐  
+원인   : tail 명령어는 기본적으로 파일의 마지막 10줄을 출력  
+해결   : tail -n 0 -f 옵션으로 새로 append되는 log만 출력
+회고   : 로그 파일을 시각화 하는 도구 사용을 못 해서 아쉽고 로그 정보에 비해 유의미한 데이터 분석이 부족
 
 ---
 
