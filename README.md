@@ -3,7 +3,7 @@
 ## 📖 Nginx Log Monitoring 소개  
 Nginx 웹 서버의 **접속 로그와 에러 로그를 모니터링**하여 서비스 가용성 및 보안 이벤트를 빠르게 파악하기 위한 프로젝트 
 
-특히 **SSH 로그인 실패 탐지, 접속 현황 분석, 리소스 사용량 확인** 등을 자동화 스크립트로 구현함  
+특히 **SSH 로그인 실패 탐지, 접속 현황 분석** 등을 자동화 스크립트로 구현함  
 
 ---  
   
@@ -36,6 +36,7 @@ Nginx 웹 서버의 **접속 로그와 에러 로그를 모니터링**하여 서
   cat /var/log/nginx/access.log
   cat /var/log/nginx/error.log
 ```
+
 
 ## 🖥️ 2.  SSH 로그인 실패 탐지
 Ubuntu 24.04는 /var/log/auth.log 대신 journald 사용. ssh/sshd 둘 다 조회   
@@ -116,6 +117,47 @@ journalctl -u ssh -u sshd -S today -U tomorrow --no-pager \
 # 분석 끝
 echo "===== 분석 끝 =====" >> $OUTPUT
 echo "" >> $OUTPUT
+```
+
+
+## ➕ fake traffic  
+### 1. 스크립트 작성
+```bash
+  #!/bin/bash
+  URL="http://localhost"
+
+  while true; do
+    # 정상 요청
+    curl -s -o /dev/null $URL/
+    # 존재하지 않는 페이지(404)
+    curl -s -o /dev/null $URL/not_found_$RANDOM.html
+    # 보호된 페이지(401/403)
+    curl -s -o /dev/null $URL/protected/
+    sleep 5   # 5초 간격으로 반복
+  done
+
+```
+### 2. 실행 권한 부여
+```bash
+chmod +x ~/fake_traffic.sh
+```
+
+### 3. 백그라운드 실행 (로그를 계속 쌓게 함)
+```bash
+nohup ~/fake_traffic.sh >/dev/null 2>&1 &
+```
+### 4. 동작 확인
+```bash
+ps aux | grep fake_traffic
+```
+
+### 5. 중지 방법 (프로세스 종료)
+```bash
+pkill -f fake_traffic.sh
+```
+### 또는
+```bash
+kill -9 <PID>
 ```
 
 ---
